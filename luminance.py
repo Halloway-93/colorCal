@@ -4,31 +4,46 @@ import serial.tools.list_ports
 
 ports = serial.tools.list_ports.comports()
 for port in ports:
-    print(f"Port: {port.device}")
-    print(f"Description: {port.description}")
-    print(f"HWID: {port.hwid}")
+    print(f"port: {port.device}")
+    print(f"description: {port.description}")
+    print(f"hwid: {port.hwid}")
     print("---")
 
 # %%
 
 cc = ColorCAL(port='/dev/cu.usbmodem00001')
-# %%
-# Check if connected
-if cc.OK:
-    print("Connected successfully!")
-    print(f"Serial: {cc.serialNum}")
-    print(f"Firmware: {cc.firm}")
+
+# %% 
+
+if cc.getNeedsCalibrateZero():
+    print("Zero calibration needed!")
+    print("Please cover the sensor completely (make it totally dark)")
+    input("Press Enter when sensor is covered...")
     
-    # Check if zero calibration needed
-    if cc.getNeedsCalibrateZero():
-        print("Cover the sensor and calibrate...")
-        # cc.calibrateZero()
-    
-    # Take a measurement
-    ok, X, Y, Z = cc.measure()
-    if ok:
-        print(f"Luminance: {Y} cd/m²")
+    success = cc.calibrateZero()
+    if success:
+        print("Zero calibration successful!")
+    else:
+        print("Calibration failed - make sure sensor is completely covered")
 else:
-    print("Connection failed")
+    print("Zero calibration not needed - already calibrated at factory")
+# %%
+# check if connected
+if cc.ok:
+    print("connected successfully!")
+    print(f"serial: {cc.serialNum}")
+    print(f"firmware: {cc.firm}")
+    
+    # check if zero calibration needed
+    if cc.getNeedsCalibrateZero():
+        print("cover the sensor and calibrate...")
+        # cc.calibratezero()
+    
+    # take a measurement
+    ok, x, y, z = cc.measure()
+    if ok:
+        print(f"luminance: {y} cd/m²")
+else:
+    print("connection failed")
 
 # %% 
